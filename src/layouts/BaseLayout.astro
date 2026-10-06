@@ -1,0 +1,23 @@
+---
+interface Props {
+  title: string;
+  description?: string;
+}
+
+const { title, description = "Portafolio de Edgardo, desarrollador Full-Stack" } = Astro.props;
+import Header from "../components/Header.astro";
+---
+
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content={description} />
+    <title>{title} | Edgardo</title>
+  </head>
+  <body>
+    <header />
+    <slot />
+  </body>
+</html>
