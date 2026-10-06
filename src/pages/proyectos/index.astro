@@ -1,0 +1,24 @@
+---
+import { getCollection } from "astro:content";
+import BaseLayout from "../../layouts/BaseLayout.astro";
+
+const projects = (await getCollection("projects", ({ id }) => id.startsWith("es/")))
+  .sort((a, b) => a.data.order - b.data.order);
+---
+
+<BaseLayout title="Proyectos">
+  <main>
+    <h1>Proyectos</h1>
+    <ul>
+      {projects.map((project) => (
+        <li>
+          <a href={`/proyectos/${project.id.replace("es/", "")}`}>
+            <h2>{project.data.title}</h2>
+          </a>
+          <p>{project.data.summary}</p>
+          <p>{project.data.stack.join(" · ")}</p>
+        </li>
+      ))}
+    </ul>
+  </main>
+</BaseLayout>

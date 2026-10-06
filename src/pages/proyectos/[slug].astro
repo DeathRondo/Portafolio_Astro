@@ -1,0 +1,50 @@
+---
+import { getCollection, render } from "astro:content";
+import BaseLayout from "../../layouts/BaseLayout.astro";
+
+export async function getStaticPaths() {
+  const projects = await getCollection("projects", ({ id }) => id.startsWith("es/"));
+  return projects.map((project) => ({
+    params: { slug: project.id.replace("es/", "") },
+    props: { project },
+  }));
+}
+
+const { project } = Astro.props;
+const { Content } = await render(project);
+const { title, summary, stack, roles, repo, demo, status } = project.data;
+
+const roleLabels = {
+  frontend: "Frontend",
+  backend: "Backend",
+  database: "Base de datos",
+  deploy: "Despliegue",
+};
+---
+
+<BaseLayout title={title} description={summary}>
+  <main>
+    <a href="/proyectos">← Volver a proyectos</a>
+    <h1>{title}</h1>
+    {status === "en-desarrollo" && <p><em>En desarrollo</em></p>}
+    <p>{summary}</p>
+    <p><strong>Stack:</strong> {stack.join(" · ")}</p>
+
+    <h2>Mi rol por capa</h2>
+    <dl>
+      {Object.entries(roles).map(([key, value]) => (
+        <>
+          <dt>{roleLabels[key as keyof typeof roleLabels]}</dt>
+          <dd>{value}</dd>
+        </>
+      ))}
+    </dl>
+
+    <p>
+      <a href={repo} target="_blank" rel="noopener">Ver repositorio</a>
+      {demo && <> · <a href={demo} target="_blank" rel="noopener">Ver demo</a></>}
+    </p>
+
+    <Content />
+  </main>
+</BaseLayout>
