@@ -1,0 +1,118 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+
+const path = Astro.url.pathname;
+---
+
+<BaseLayout title="Página no encontrada">
+  <section class="not-found">
+    <div class="terminal" aria-hidden="true">
+      <div class="dots"><span></span><span></span><span></span></div>
+      <p><span class="prompt">$</span> cd {path}</p>
+      <p class="error">bash: cd: {path}: No such file or directory</p>
+      <p><span class="prompt">$</span> <span class="cursor">_</span></p>
+    </div>
+
+    <p class="code">Error 404</p>
+    <h1>Esta página no existe</h1>
+    <p class="text">
+      Puede que el enlace esté mal escrito o que la página se haya movido.
+    </p>
+
+    <div class="actions">
+      <a href="/" class="btn btn-primary">Volver al inicio</a>
+      <a href="/proyectos" class="btn btn-secondary">Ver proyectos</a>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .not-found {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    max-width: 680px;
+  }
+
+  .terminal {
+    margin-bottom: 24px;
+    padding: 20px 22px;
+    background: #0b0d10;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    font-family: var(--font-mono);
+    font-size: 14px;
+    color: var(--color-text-soft);
+    overflow-x: auto;
+  }
+
+  .terminal p {
+    margin: 0 0 6px;
+    white-space: nowrap;
+  }
+
+  .dots {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 16px;
+  }
+
+  .dots span {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--color-border-strong);
+  }
+
+  .prompt {
+    color: var(--color-accent);
+  }
+
+  .error {
+    color: #ff9b8a;
+  }
+
+  .cursor {
+    color: var(--color-accent);
+    animation: blink 1.1s steps(1) infinite;
+  }
+
+  @keyframes blink {
+    50% {
+      opacity: 0;
+    }
+  }
+
+  .code {
+    margin: 0;
+    font-family: var(--font-mono);
+    font-size: 15px;
+    color: var(--color-accent);
+  }
+
+  h1 {
+    margin: 0;
+    font-size: clamp(36px, 5vw, 56px);
+    line-height: 1.05;
+    letter-spacing: -0.02em;
+  }
+
+  .text {
+    margin: 0;
+    font-size: 19px;
+    color: var(--color-text-soft);
+  }
+
+  .actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 8px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .cursor {
+      animation: none;
+    }
+  }
+</style>
