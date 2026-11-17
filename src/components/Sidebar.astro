@@ -1,0 +1,286 @@
+---
+import { SITE } from "../config";
+
+const links = [
+  { href: "/", label: "Inicio" },
+  { href: "/proyectos", label: "Proyectos" },
+  { href: "/sobre-mi", label: "Sobre mí" },
+  { href: "/contacto", label: "Contacto" },
+];
+
+const path = Astro.url.pathname.replace(/\/$/, "") || "/";
+const isActive = (href: string) =>
+  href === "/" ? path === "/" : path.startsWith(href);
+---
+
+<aside class="sidebar" data-sidebar>
+  <div class="top">
+    <a href="/" class="brand">
+      <span class="brand-path">~/edgardo</span>
+      <span class="brand-name">{SITE.name}</span>
+      <span class="brand-role">{SITE.role}</span>
+    </a>
+
+    <button
+      type="button"
+      class="menu-toggle"
+      data-menu-toggle
+      aria-expanded="false"
+      aria-controls="sidebar-menu"
+      aria-label="Abrir menú"
+    >
+      <svg class="icon-open" aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+        <path d="M4 7h16M4 12h16M4 17h16" />
+      </svg>
+      <svg class="icon-close" aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+        <path d="M6 6l12 12M18 6L6 18" />
+      </svg>
+    </button>
+  </div>
+
+  <div class="menu" id="sidebar-menu">
+    <nav aria-label="Principal">
+      {links.map((link, i) => (
+        <a
+          href={link.href}
+          class:list={["nav-link", { active: isActive(link.href) }]}
+          aria-current={isActive(link.href) ? "page" : undefined}
+        >
+          <span class="nav-num">{String(i + 1).padStart(2, "0")}</span>
+          <span>{link.label}</span>
+        </a>
+      ))}
+    </nav>
+
+    <div class="social">
+      <a href={SITE.github} target="_blank" rel="noopener">GitHub ↗</a>
+      <a href={SITE.linkedin} target="_blank" rel="noopener">LinkedIn ↗</a>
+    </div>
+  </div>
+</aside>
+
+<style>
+  .sidebar {
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    gap: 40px;
+    padding: 40px 28px;
+    background: var(--color-surface);
+    border-right: 1px solid var(--color-border);
+    overflow-y: auto;
+  }
+
+  .top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .brand {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    text-decoration: none;
+    color: var(--color-text);
+  }
+
+  .brand:hover {
+    color: var(--color-text);
+  }
+
+  .brand-path {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    color: var(--color-accent);
+  }
+
+  .brand-name {
+    font-size: 26px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+  }
+
+  .brand-role {
+    font-size: 15px;
+    color: var(--color-muted);
+  }
+
+  .menu-toggle {
+    display: none;
+  }
+
+  .menu {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 40px;
+  }
+
+  nav {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    font-family: var(--font-mono);
+    font-size: 15px;
+  }
+
+  .nav-link {
+    display: flex;
+    gap: 10px;
+    padding: 12px;
+    border-radius: var(--radius);
+    text-decoration: none;
+    color: var(--color-text);
+    transition: background-color 0.2s ease;
+  }
+
+  .nav-link:hover {
+    background: var(--color-surface-2);
+    color: var(--color-text);
+  }
+
+  .nav-num {
+    color: var(--color-muted);
+  }
+
+  .nav-link.active {
+    background: var(--color-accent);
+    color: var(--color-on-accent);
+    font-weight: 700;
+  }
+
+  .nav-link.active .nav-num {
+    color: inherit;
+  }
+
+  .social {
+    margin-top: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .social a {
+    color: var(--color-text);
+    text-decoration: none;
+  }
+
+  .social a:hover {
+    color: var(--color-accent);
+  }
+
+  /* Celular: header superior + menú hamburguesa */
+  @media (max-width: 900px) {
+    .sidebar {
+      height: auto;
+      gap: 0;
+      padding: 0;
+      border-right: 0;
+      border-bottom: 1px solid var(--color-border);
+      overflow: visible;
+      z-index: 10;
+    }
+
+    .top {
+      height: 64px;
+      padding: 0 12px 0 20px;
+    }
+
+    .brand {
+      gap: 2px;
+    }
+
+    .brand-path {
+      display: none;
+    }
+
+    .brand-name {
+      font-size: 18px;
+    }
+
+    .brand-role {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--color-accent);
+    }
+
+    .menu-toggle {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 48px;
+      height: 48px;
+      background: transparent;
+      color: var(--color-text);
+      border: 1px solid var(--color-border-strong);
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    .icon-close {
+      display: none;
+    }
+
+    .sidebar[data-open] .icon-open {
+      display: none;
+    }
+
+    .sidebar[data-open] .icon-close {
+      display: block;
+    }
+
+    .menu {
+      display: none;
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      gap: 28px;
+      padding: 24px 20px;
+      background: var(--color-surface);
+      border-bottom: 1px solid var(--color-border);
+      max-height: calc(100vh - 64px);
+      overflow-y: auto;
+    }
+
+    .sidebar[data-open] .menu {
+      display: flex;
+    }
+
+    nav {
+      font-size: 18px;
+    }
+
+    .nav-link {
+      min-height: 52px;
+      align-items: center;
+      padding: 0 14px;
+    }
+  }
+</style>
+
+<script>
+  const sidebar = document.querySelector<HTMLElement>("[data-sidebar]");
+  const toggle = document.querySelector<HTMLButtonElement>("[data-menu-toggle]");
+
+  function setOpen(open: boolean) {
+    sidebar?.toggleAttribute("data-open", open);
+    toggle?.setAttribute("aria-expanded", String(open));
+    toggle?.setAttribute("aria-label", open ? "Cerrar menú" : "Abrir menú");
+  }
+
+  toggle?.addEventListener("click", () => {
+    setOpen(!sidebar?.hasAttribute("data-open"));
+  });
+
+  // Cerrar con la tecla Escape
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && sidebar?.hasAttribute("data-open")) {
+      setOpen(false);
+      toggle?.focus();
+    }
+  });
+</script>
