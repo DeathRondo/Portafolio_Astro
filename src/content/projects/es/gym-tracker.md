@@ -18,3 +18,11 @@ Texto de prueba: aquí irá por qué hiciste la app.
 ## Cómo funciona
 
 Dashboard con tarjetas por ejercicio. Al tocar una se registran series, repeticiones y peso, y se calculan el volumen y el 1RM estimado.
+
+## Cálculo del 1RM
+
+Uso la fórmula de Epley:
+
+```ts
+const oneRepMax = weight * (1 + reps / 30);
+```

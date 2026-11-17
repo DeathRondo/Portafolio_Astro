@@ -1,50 +1,366 @@
 ---
-import { getCollection, render } from "astro:content";
+import { Image } from "astro:assets";
+import { render } from "astro:content";
 import BaseLayout from "../../layouts/BaseLayout.astro";
+import { getProjects, projectSlug } from "../../lib/projects";
 
 export async function getStaticPaths() {
-  const projects = await getCollection("projects", ({ id }) => id.startsWith("es/"));
+  const projects = await getProjects("es");
   return projects.map((project) => ({
-    params: { slug: project.id.replace("es/", "") },
+    params: { slug: projectSlug(project.id) },
     props: { project },
   }));
 }
 
 const { project } = Astro.props;
 const { Content } = await render(project);
-const { title, summary, stack, roles, repo, demo, status } = project.data;
+const { title, summary, stack, roles, repo, demo, cover, status } = project.data;
 
 const roleLabels = {
   frontend: "Frontend",
   backend: "Backend",
   database: "Base de datos",
   deploy: "Despliegue",
-};
+} as const;
+
+// Solo las capas que tienen texto, en un orden fijo
+const roleEntries = (Object.keys(roleLabels) as (keyof typeof roleLabels)[])
+  .filter((key) => roles[key])
+  .map((key) => ({ label: roleLabels[key], text: roles[key] }));
 ---
 
 <BaseLayout title={title} description={summary}>
-  <main>
-    <a href="/proyectos">← Volver a proyectos</a>
-    <h1>{title}</h1>
-    {status === "en-desarrollo" && <p><em>En desarrollo</em></p>}
-    <p>{summary}</p>
-    <p><strong>Stack:</strong> {stack.join(" · ")}</p>
+  <a href="/proyectos" class="back">← cd ../proyectos</a>
 
-    <h2>Mi rol por capa</h2>
-    <dl>
-      {Object.entries(roles).map(([key, value]) => (
-        <>
-          <dt>{roleLabels[key as keyof typeof roleLabels]}</dt>
-          <dd>{value}</dd>
-        </>
-      ))}
-    </dl>
+  <header class="header">
+    <p class="label">&gt; proyecto</p>
+    <div class="title-row">
+      <h1>{title}</h1>
+      {status === "en-desarrollo" && <span class="status">en desarrollo</span>}
+    </div>
+    <p class="summary">{summary}</p>
+  </header>
 
-    <p>
-      <a href={repo} target="_blank" rel="noopener">Ver repositorio</a>
-      {demo && <> · <a href={demo} target="_blank" rel="noopener">Ver demo</a></>}
-    </p>
+  {cover && (
+    <div class="cover">
+      <Image
+        src={cover}
+        alt={`Captura de ${title}`}
+        widths={[800, 1400]}
+        sizes="(max-width: 900px) 100vw, 70vw"
+      />
+    </div>
+  )}
 
-    <Content />
-  </main>
+  <div class="detail">
+    <aside class="facts" aria-label="Ficha técnica">
+      <section>
+        <h2 class="facts-title">stack</h2>
+        <ul class="tags">
+          {stack.map((tech) => <li>{tech}</li>)}
+        </ul>
+      </section>
+
+      <section>
+        <h2 class="facts-title">enlaces</h2>
+        <div class="links">
+          <a href={repo} class="btn btn-primary" target="_blank" rel="noopener">
+            Ver repositorio ↗
+          </a>
+          {demo && (
+            <a href={demo} class="btn btn-secondary" target="_blank" rel="noopener">
+              Ver demo ↗
+            </a>
+          )}
+        </div>
+      </section>
+    </aside>
+
+    <div class="main">
+      {roleEntries.length > 0 && (
+        <section class="roles">
+          <h2 class="section-title">Mi rol por capa</h2>
+          <dl>
+            {roleEntries.map((role) => (
+              <div class="role">
+                <dt>{role.label}</dt>
+                <dd>{role.text}</dd>
+              </div>
+            ))}
+          </dl>
+        </section>
+      )}
+
+      <div class="prose">
+        <Content />
+      </div>
+    </div>
+  </div>
 </BaseLayout>
+
+<style>
+  .back {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    margin-bottom: 32px;
+    font-family: var(--font-mono);
+    font-size: 14px;
+    color: var(--color-muted);
+    text-decoration: none;
+  }
+
+  .back:hover {
+    color: var(--color-accent);
+  }
+
+  .header {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    max-width: 860px;
+    margin-bottom: 48px;
+  }
+
+  .label {
+    margin: 0;
+    font-family: var(--font-mono);
+    font-size: 15px;
+    color: var(--color-accent);
+  }
+
+  .title-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 16px;
+  }
+
+  h1 {
+    margin: 0;
+    font-size: clamp(40px, 5.5vw, 72px);
+    line-height: 1;
+    letter-spacing: -0.02em;
+  }
+
+  .status {
+    padding: 5px 10px;
+    border: 1px solid #3a3424;
+    border-radius: 4px;
+    font-family: var(--font-mono);
+    font-size: 13px;
+    color: var(--color-accent);
+  }
+
+  .summary {
+    margin: 0;
+    max-width: 680px;
+    font-size: 21px;
+    color: var(--color-text-soft);
+  }
+
+  .cover {
+    margin-bottom: 56px;
+    overflow: hidden;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    aspect-ratio: 16 / 9;
+  }
+
+  .cover :global(img) {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  /* Dos columnas: contenido + ficha */
+  .detail {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 280px;
+    grid-template-areas: "main facts";
+    gap: 56px;
+    align-items: start;
+  }
+
+  .main {
+    grid-area: main;
+    min-width: 0;
+  }
+
+  .facts {
+    grid-area: facts;
+    position: sticky;
+    top: 32px;
+    display: flex;
+    flex-direction: column;
+    gap: 28px;
+    padding: 24px;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+  }
+
+  .facts-title {
+    margin: 0 0 12px;
+    font-family: var(--font-mono);
+    font-size: 13px;
+    font-weight: 400;
+    color: var(--color-muted);
+  }
+
+  .facts-title::before {
+    content: "// ";
+  }
+
+  .tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .tags li {
+    padding: 5px 9px;
+    border-radius: 4px;
+    background: var(--color-surface-2);
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--color-text-soft);
+  }
+
+  .links {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  /* Mi rol por capa */
+  .roles {
+    margin-bottom: 48px;
+  }
+
+  .section-title {
+    margin: 0 0 20px;
+    font-size: 26px;
+  }
+
+  dl {
+    display: grid;
+    gap: 12px;
+    margin: 0;
+  }
+
+  .role {
+    display: grid;
+    grid-template-columns: 140px minmax(0, 1fr);
+    gap: 16px;
+    padding: 16px 18px;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius);
+  }
+
+  dt {
+    font-family: var(--font-mono);
+    font-size: 14px;
+    color: var(--color-accent);
+  }
+
+  dd {
+    margin: 0;
+    color: var(--color-text-soft);
+  }
+
+  /* Contenido en Markdown */
+  .prose {
+    max-width: 70ch;
+    font-size: 17px;
+    line-height: 1.7;
+    color: var(--color-text-soft);
+  }
+
+  .prose :global(h2) {
+    margin: 40px 0 12px;
+    font-size: 24px;
+    line-height: 1.2;
+    color: var(--color-text);
+  }
+
+  .prose :global(h3) {
+    margin: 32px 0 10px;
+    font-size: 19px;
+    color: var(--color-text);
+  }
+
+  .prose :global(p) {
+    margin: 0 0 16px;
+  }
+
+  .prose :global(ul),
+  .prose :global(ol) {
+    margin: 0 0 16px;
+    padding-left: 22px;
+  }
+
+  .prose :global(li) {
+    margin-bottom: 6px;
+  }
+
+  .prose :global(strong) {
+    color: var(--color-text);
+  }
+
+  .prose :global(code) {
+    padding: 2px 6px;
+    border-radius: 4px;
+    background: var(--color-surface-2);
+    font-family: var(--font-mono);
+    font-size: 0.9em;
+    color: var(--color-text);
+  }
+
+  .prose :global(pre) {
+    margin: 0 0 20px;
+    padding: 16px;
+    overflow-x: auto;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius);
+    font-size: 14px;
+  }
+
+  .prose :global(pre code) {
+    padding: 0;
+    background: none;
+  }
+
+  .prose :global(img) {
+    margin: 24px 0;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius);
+  }
+
+  @media (max-width: 900px) {
+    .detail {
+      grid-template-columns: minmax(0, 1fr);
+      grid-template-areas:
+        "facts"
+        "main";
+      gap: 40px;
+    }
+
+    .facts {
+      position: static;
+    }
+
+    .summary {
+      font-size: 18px;
+    }
+
+    .role {
+      grid-template-columns: minmax(0, 1fr);
+      gap: 6px;
+    }
+  }
+</style>

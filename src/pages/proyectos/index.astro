@@ -1,24 +1,30 @@
 ---
-import { getCollection } from "astro:content";
 import BaseLayout from "../../layouts/BaseLayout.astro";
+import ProjectCard from "../../components/ProjectCard.astro";
+import { getProjects } from "../../lib/projects";
 
-const projects = (await getCollection("projects", ({ id }) => id.startsWith("es/")))
-  .sort((a, b) => a.data.order - b.data.order);
+const projects = await getProjects("es");
 ---
 
 <BaseLayout title="Proyectos">
-  <main>
-    <h1>Proyectos</h1>
-    <ul>
-      {projects.map((project) => (
-        <li>
-          <a href={`/proyectos/${project.id.replace("es/", "")}`}>
-            <h2>{project.data.title}</h2>
-          </a>
-          <p>{project.data.summary}</p>
-          <p>{project.data.stack.join(" · ")}</p>
-        </li>
-      ))}
-    </ul>
-  </main>
+  <p class="label">&gt; ls proyectos/</p>
+  <h1>Proyectos</h1>
+  <div class="project-grid">
+    {projects.map((project, i) => <ProjectCard project={project} index={i} />)}
+  </div>
 </BaseLayout>
+
+<style>
+  .label {
+    margin: 0 0 12px;
+    font-family: var(--font-mono);
+    font-size: 15px;
+    color: var(--color-accent);
+  }
+
+  h1 {
+    margin: 0 0 40px;
+    font-size: clamp(40px, 5vw, 64px);
+    letter-spacing: -0.02em;
+  }
+</style>
